@@ -1,0 +1,761 @@
+1. Implement Measure of central location(mean,median,mode,quartile,percentile)
+
+import seaborn as sns
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset into a pandas DataFrame
+df = sns.load_dataset("tips")
+
+# --- Numerical Descriptive Statistics ---
+# Select only numerical columns
+numeric_df = df.select_dtypes(include=[np.number])
+
+# --- Measures of Central Location ---
+print("### Measures of Central Location ###")
+
+# Mean
+print("\nMean:\n", numeric_df.mean())            # Central average of each feature
+
+# Median
+print("\nMedian:\n", numeric_df.median())      # Middle value, robust to outliers
+
+# Mode
+print("\nMode:\n", numeric_df.mode().iloc[0])  # Most frequent value (first mode)
+
+
+# --- Measures of Variation ---
+print("\n### Measures of Variation ###")
+
+# Range (Max - Min)
+print("\nRange:\n", numeric_df.max() - numeric_df.min())
+
+# Interquartile Range (Q3 - Q1)
+print("\nInterquartile Range (IQR):\n", numeric_df.quantile(0.75) - numeric_df.quantile(0.25))
+
+# Variance
+print("\nVariance:\n", numeric_df.var())       # Square of std dev, shows dispersion
+
+# Standard Deviation
+print("\nStandard Deviation:\n", numeric_df.std())  # Spread around mean
+
+# Coefficient of Variation (std dev / mean)
+cv = numeric_df.std() / numeric_df.mean() * 100  # Multiply by 100 for percentage
+print("\nCoefficient of Variation (%):\n", cv)
+
+
+# --- Other Descriptive Statistics ---
+print("\n### Other Descriptive Statistics ###")
+
+# Quartiles (25%, 50%, 75%)
+print("\nQuartiles:\n", numeric_df.quantile([0.25, 0.5, 0.75]))  # Q1, Q2 (Median), Q3
+
+# Percentiles (Example: 10th, 90th)
+print("\n10th and 90th Percentile:\n", numeric_df.quantile([0.10, 0.90]))  # 10th and 90th percentiles
+
+# Skewness
+print("\nSkewness:\n", numeric_df.skew())      # Asymmetry of distribution
+
+# Kurtosis
+print("\nKurtosis:\n", numeric_df.kurtosis())  # Peakedness / tailedness
+
+# Correlation Matrix
+print("\nCorrelation Matrix:\n", numeric_df.corr())  # Linear relationships between numerical features
+
+# Non-null Count (to check completeness of data)
+print("\nNon-null Count:\n", numeric_df.count())     # Checks data completeness (total non-null entries)
+
+
+# --- Visual Descriptive Statistics ---
+
+# 1. Histogram - shows frequency distribution for each numeric feature
+df.hist(bins=15, figsize=(12, 10))
+plt.suptitle('Histograms of Features')
+plt.tight_layout()
+plt.show()
+
+# 2. Boxplot - highlights median, IQR, and outliers for numerical features only
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=df.select_dtypes(include=[np.number]))  # Select numeric columns only
+plt.title('Boxplot of Numeric Features')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# 3. Heatmap - visualizes correlation between numeric features
+plt.figure(figsize=(10, 8))
+sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Heatmap')
+plt.tight_layout()
+plt.show()
+
+# 4. Pairplot - scatter plots between feature pairs, shows relationships between numerical features
+sns.pairplot(df.select_dtypes(include=[np.number]))  # Select numeric columns only
+plt.suptitle('Pairplot of Numeric Features', y=1.02)
+plt.show()
+
+2. Implement Measure of variation(range, interquartile range, variance, standard deviation, coefficient of variation)
+import pandas as pd
+import numpy as np
+import seaborn as sns
+
+df = sns.load_dataset('tips')
+
+numeric_cols = df.select_dtypes(include=[np.number]).columns.to_list()
+
+
+# central tendency
+mean = df[numeric_cols].mean()
+median = df[numeric_cols].median()
+mode = df[numeric_cols].mode()
+
+print(mean)
+print(median)
+print(mode.iloc[0])
+print('quantiles :\n',df[numeric_cols].quantile([0.25,0.5,0.75]))
+print('percentile :\n',df[numeric_cols].quantile([0.1,0.9]))
+
+# dispersion
+print('Range :\n',df[numeric_cols].max() - df[numeric_cols].min())
+print('IQR :\n',df[numeric_cols].quantile(0.75) - df[numeric_cols].quantile(0.25))
+print('Variance :\n',df[numeric_cols].var())
+print('Standard dev :\n',df[numeric_cols].std())
+print('Coefficient of variation :\n',df[numeric_cols].std() / df[numeric_cols].mean() * 100)
+
+print('skewness :',df[numeric_cols].skew())
+print('kurtosis :',df[numeric_cols].kurtosis())
+print('\n correlation : ',df[numeric_cols].corr())
+
+
+plt.figure(figsize=(10,6))
+sns.boxplot(df[numeric_cols])
+plt.show()
+
+plt.figure(figsize=(10,6))
+df[numeric_cols].hist(bins=20)
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(10,6))
+sns.heatmap(df[numeric_cols].corr(),annot=True,cmap='coolwarm')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(10,6))
+sns.pairplot(df[numeric_cols])
+plt.tight_layout()
+plt.show()
+
+3. Implement data cleaning techniques
+
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder
+
+def visualize_nans(df, title):
+    plt.figure(figsize=(10, 5))
+    sns.heatmap(df.isnull(), cbar=False, cmap='viridis')
+    plt.title(title)
+    plt.show()
+
+def clean_data():
+    df = sns.load_dataset('titanic')                         # Load inbuilt Titanic dataset
+    df = df.drop(columns=['deck', 'parch'])                  # Drop columns with excessive NaNs or excluded by user
+
+    df = df.mask(np.random.rand(*df.shape) < 0.05)           # Introduce 5% random NaNs
+    df.to_excel("Dirty_titanic_data.xlsx", index=False)      # Save dirty version for reference
+    visualize_nans(df, "Missing Values Before Cleaning")     # Show missing before
+
+    num_cols = df.select_dtypes(include='number').columns.tolist()
+    cat_cols = df.select_dtypes(include='object').columns.tolist()
+
+    # --- 2. Remove duplicates ---
+    df = df.drop_duplicates()
+
+    # --- 3. Standardize categorical labels ---
+    for col in cat_cols:
+        df[col] = df[col].astype(str).str.lower().str.strip()
+
+    # --- 4. Convert data types properly ---
+    df = df[df['survived'].notna()]
+    df['survived'] = df['survived'].astype(int)
+    for col in num_cols:
+        df[col] = pd.to_numeric(df[col], errors='coerce')    # Ensure numerics are clean
+
+    # Handle outliers column-wise using IQR
+    for col in num_cols:
+        q1, q3 = df[col].quantile([0.25, 0.75])
+        iqr = q3 - q1
+        df = df[(df[col] >= q1 - 1.5 * iqr) & (df[col] <= q3 + 1.5 * iqr) | df[col].isna()]
+
+    # Impute numeric columns based on skewness
+    for col in num_cols:
+        strategy = 'median' if abs(df[col].skew(skipna=True)) > 1 else 'mean'
+        df[col] = SimpleImputer(strategy=strategy).fit_transform(df[[col]])
+
+    # Impute categorical columns using most frequent
+    df[cat_cols] = SimpleImputer(strategy='most_frequent').fit_transform(df[cat_cols])
+
+    # Encode categorical columns
+    for col in cat_cols:
+        df[col] = LabelEncoder().fit_transform(df[col])
+
+    # Normalize numeric columns using Min-Max scaling
+    df[num_cols] = (df[num_cols] - df[num_cols].min()) / (df[num_cols].max() - df[num_cols].min())
+
+    visualize_nans(df, "Missing Values After Cleaning")      # Show missing after
+
+    df.to_csv('cleaned_titanic_data.csv', index=False)
+    print("\nSample of cleaned data:")
+    print(df.head())
+
+if __name__ == "__main__":
+    clean_data()
+
+4. Skewness and Kurtosis
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import skew, kurtosis
+
+# Load built-in dataset
+data = sns.load_dataset("iris")
+
+# Select a numeric column
+col = data['sepal_length']
+
+# Calculate skewness and kurtosis
+skew_val = skew(col)
+kurt_val = kurtosis(col)
+
+# Print skewness and kurtosis
+print("Skewness:", skew(col))
+print("Kurtosis:", kurtosis(col))  # Fisher’s definition (normal ==> 0)
+
+# Interpret skewness
+if skew_val > 0:
+    print("Interpretation (Skewness): Positively skewed (tail on the right).")
+elif skew_val < 0:
+    print("Interpretation (Skewness): Negatively skewed (tail on the left).")
+else:
+    print("Interpretation (Skewness): Symmetrical distribution.")
+
+# Interpret kurtosis
+if kurt_val > 0:
+    print("Interpretation (Kurtosis): Leptokurtic (sharper peak, heavy tails).")
+elif kurt_val < 0:
+    print("Interpretation (Kurtosis): Platykurtic (flatter peak, light tails).")
+else:
+    print("Interpretation (Kurtosis): Mesokurtic (normal peak and tails).")
+
+# Plot histogram of sepal length
+plt.hist(col, bins=20, edgecolor='black', alpha=0.7, color='lightblue')
+plt.title('Histogram of Sepal Length')
+plt.xlabel('Sepal Length')
+plt.ylabel('Frequency')
+
+# Adding vertical lines for skewness interpretation
+plt.axvline(col.mean(), color='blue', linestyle='--', label='Mean')
+plt.axvline(col.median(), color='green', linestyle='-', label='Median')
+
+plt.legend()
+plt.show()
+
+# manual
+skewness_manual = np.sum((col - col.mean())**3) / (len(col) * np.std(col)**3)
+kurtosis_manual = np.sum((col - col.mean())**4) / (len(col) * np.std(col)**4) - 3
+
+print("Skewness (manual):", skewness_manual)
+print("Kurtosis (manual):", kurtosis_manual)
+
+  
+5. Karl Pearsons coefficient of skewness  
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import mode
+
+# Load dataset
+data = sns.load_dataset('iris')
+col = data['sepal_length']
+
+# Calculate mean, mode, median, std deviation
+mean = np.mean(col)
+mode_val = mode(col, keepdims=False).mode
+median = np.median(col)
+std_dev = np.std(col)
+
+# Karl Pearson’s Coefficient of Skewness
+skewness = (mean - mode_val) / std_dev
+# Alternate formula using median: skewness = 3 * (mean - median) / std_dev
+
+print("Karl Pearson’s Skewness:", skewness)
+
+# Interpretation
+if skewness > 0:
+    print("Interpretation: Positively skewed (right-tailed distribution).")
+elif skewness < 0:
+    print("Interpretation: Negatively skewed (left-tailed distribution).")
+else:
+    print("Interpretation: Symmetrical distribution.")
+
+# Plot histogram + mean, median, mode
+plt.hist(col, bins=20, edgecolor='black', alpha=0.7, color='lightcoral')
+plt.axvline(mean, color='blue', linestyle='--', label=f'Mean: {mean:.2f}')
+plt.axvline(median, color='green', linestyle='-', label=f'Median: {median:.2f}')
+plt.axvline(mode_val, color='purple', linestyle=':', label=f'Mode: {mode_val:.2f}')
+
+plt.title('Histogram with Mean, Median, Mode (Karl Pearson Skewness)')
+plt.xlabel('Sepal Length')
+plt.ylabel('Frequency')
+plt.legend()
+plt.show()
+
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Load dataset
+data = sns.load_dataset('iris')
+col = data['sepal_length']
+
+mean = np.mean(col)
+median_val = np.median(col)
+mode_val = col.mode().iloc[0]
+std_val = np.std(col)
+
+skewness = (mean - mode_val) / std_val
+
+skewness_2 = 3*(mean - median_val) / std_val
+
+print('Skewness :',skewness)
+print('Skewness :',skewness_2)
+print('Skewness :',col.skew())
+
+plt.figure(figsize=(10,6))
+plt.hist(col,bins=20,color='black',edgecolor='white',density=True)
+plt.axvline(mean,label='Mean',linestyle='--',color='red')
+plt.axvline(median_val,label='Median',linestyle='--',color='blue')
+plt.axvline(mode_val,label='Mode',linestyle='--',color='green')
+plt.show()
+
+6. Implement Bowleys’s Coefficient of Skewness
+
+  
+  import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = sns.load_dataset('iris')
+col = data['sepal_length']
+
+# Calculate quartiles
+Q1 = np.percentile(col, 25)
+Q2 = np.percentile(col, 50)
+Q3 = np.percentile(col, 75)
+
+# Bowley's Coefficient of Skewness
+bowley_skewness = (Q3 + Q1 - 2 * Q2) / (Q3 - Q1)
+print("Bowley’s Coefficient of Skewness:", bowley_skewness)
+
+# Interpretation
+if bowley_skewness > 0:
+    print("Interpretation: Positively skewed (more values on the left).")
+elif bowley_skewness < 0:
+    print("Interpretation: Negatively skewed (more values on the right).")
+else:
+    print("Interpretation: Symmetrical distribution.")
+
+# Plot histogram with Q1, Q2, Q3
+plt.hist(col, bins=20, edgecolor='black', alpha=0.7, color='lightgreen')
+plt.axvline(Q1, color='blue', linestyle='--', label='Q1 (25%)')
+plt.axvline(Q2, color='red', linestyle='-', label='Q2 (Median)')
+plt.axvline(Q3, color='purple', linestyle='--', label='Q3 (75%)')
+
+plt.title('Histogram with Quartiles - Visualizing Skewness')
+plt.xlabel('Sepal Length')
+plt.ylabel('Frequency')
+plt.legend()
+plt.show()
+
+  
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = sns.load_dataset('iris')
+col = data['sepal_length']
+
+q1,q2,q3 = col.quantile([0.25,0.5,0.75])
+
+bowley_skewness = (q1 + q3 - 2*q2) / (q3 - q1)
+
+print('Skewness :',bowley_skewness)
+
+plt.figure(figsize=(10,6))
+sns.histplot(col,bins=20,color='red',edgecolor='blue',alpha=0.6,kde=True)
+plt.axvline(q1,color='blue',linestyle='--',label='Q1')
+plt.axvline(q2,color='red',linestyle='--',label='Q2')
+plt.axvline(q3,color='green',linestyle='--',label='Q3')
+plt.legend()
+plt.show()
+
+
+  
+7. Implement Karl Pearson’s Correlation coefficient
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = sns.load_dataset('iris')
+
+# Select two numeric columns
+x = data['sepal_length']
+y = data['petal_length']
+
+# Karl Pearson's Correlation Coefficient (using numpy)
+corr_matrix = np.corrcoef(x, y)
+r = corr_matrix[0, 1]
+print("Karl Pearson’s Correlation Coefficient (r):", r)
+
+# Interpretation
+if r > 0:
+    print("Interpretation: Positive correlation.")
+elif r < 0:
+    print("Interpretation: Negative correlation.")
+else:
+    print("Interpretation: No correlation.")
+
+# --- Manual calculation (for reference only) ---
+# mean_x = np.mean(x)
+# mean_y = np.mean(y)
+# std_x = np.std(x)
+# std_y = np.std(y)
+#
+# numerator = np.sum((x - mean_x) * (y - mean_y))
+# denominator = len(x) * std_x * std_y
+# r_manual = numerator / denominator
+# print("Manual Pearson r:", r_manual)
+
+# Scatter plot with trend line
+sns.regplot(x=x, y=y, scatter_kws={"color": "red"}, line_kws={"color": "blue"})
+plt.title(f'Correlation (r = {r:.2f})')
+plt.xlabel('Sepal Length')
+plt.ylabel('Petal Length')
+plt.show()  
+  
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = sns.load_dataset('iris')
+x = data['sepal_length']
+y = data['petal_length']
+
+karl_corr = np.sum((x-x.mean()) * (y - y.mean())) / (len(x) * x.std() * y.std())
+
+print(f'Karl Pearson r : {karl_corr:.2f}')
+print(f'Karl Pearson r : {x.corr(y,method="pearson"):.2f}')
+
+plt.figure(figsize=(8,6))
+sns.regplot(x=x,y=y,scatter_kws={'color':'red'},line_kws={'color':'blue'})
+plt.show()
+
+8. Implement Spearman correlation coefficient
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import spearmanr
+
+# Load dataset
+data = sns.load_dataset('iris')
+
+# Select two numeric columns
+x = data['sepal_length']
+y = data['petal_length']
+
+# Calculate Spearman correlation coefficient
+rho, p_value = spearmanr(x, y)
+
+print("Spearman's Rank Correlation Coefficient (rho):", rho)
+print("P-value:", p_value)
+
+# Interpretation
+if rho > 0:
+    print("Interpretation: Positive correlation (monotonic increasing relationship).")
+elif rho < 0:
+    print("Interpretation: Negative correlation (monotonic decreasing relationship).")
+else:
+    print("Interpretation: No correlation.")
+
+# Scatter plot with trend line
+sns.regplot(x=x, y=y, scatter_kws={"color": "red"}, line_kws={"color": "blue"})
+plt.title(f'Spearman Rank Correlation (rho = {rho:.2f})')
+plt.xlabel('Sepal Length')
+plt.ylabel('Petal Length')
+plt.show()
+
+  
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = sns.load_dataset('iris')
+x = data['sepal_length']
+y = data['petal_length']
+
+x_rank = x.rank()
+y_rank = y.rank()
+n = len(x)
+spearman_corr = 1 - (6 * np.sum((x_rank - y_rank)**2) / (n**3 - n))
+print('Spearman :',spearman_corr)
+print('Spearman :',x.corr(y,method='spearman'))
+
+sns.regplot(x=x,y=y,scatter_kws={'color':'blue'},line_kws={'color':'red'})
+plt.show()
+
+
+9. Implement data visualization techniques for numerical variable/categorical variable/qualitative/quantitative data
+import seaborn as sns
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+import numpy as np
+
+# Load dataset
+data = sns.load_dataset("iris")
+
+# 1. **Numerical Variable Visualization**: Histogram, Box Plot, KDE
+def numerical_visualization(data):
+    # Histogram (Univariate)
+    plt.figure(figsize=(10, 6))
+    sns.histplot(data['sepal_length'], bins=20, kde=True, color='skyblue', stat='density')
+    plt.title('Histogram and KDE of Sepal Length')  # Univariate Plot
+    plt.xlabel('Sepal Length')
+    plt.ylabel('Density')
+    plt.show()
+
+    # Box Plot (Univariate)
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(x=data['sepal_length'], color='lightgreen')
+    plt.title('Box Plot of Sepal Length')  # Univariate Plot
+    plt.xlabel('Sepal Length')
+    plt.show()
+
+# 2. **Categorical Variable Visualization**: Bar Plot, Count Plot
+def categorical_visualization(data):
+    # Bar Plot (Univariate)
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='species', y=data['sepal_length'], data=data, ci=None, palette='Set2')
+    plt.title('Bar Plot of Sepal Length by Species')  # Univariate Plot
+    plt.ylabel('Average Sepal Length')
+    plt.show()
+
+    # Count Plot (Univariate)
+    plt.figure(figsize=(10, 6))
+    sns.countplot(x='species', data=data, palette='Set3')
+    plt.title('Count Plot of Species')  # Univariate Plot
+    plt.show()
+
+# 3. **Qualitative Data Visualization**: Word Cloud
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import nltk
+from nltk.corpus import movie_reviews
+
+def qualitative_visualization():
+    nltk.download('movie_reviews', quiet=True)
+    words = " ".join(movie_reviews.words())
+    wordcloud = WordCloud(background_color='white').generate(words)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+
+# 4. **Quantitative Data Visualization**: Scatter Plot, Line Plot
+def quantitative_visualization(data):
+    # Scatter Plot (Bivariate)
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x='sepal_length', y='sepal_width', hue='species', data=data, palette='deep')
+    plt.title('Scatter Plot of Sepal Length vs Sepal Width')  # Bivariate Plot
+    plt.xlabel('Sepal Length')
+    plt.ylabel('Sepal Width')
+    plt.show()
+
+    # Line Plot (Univariate, but plotted over an index)
+    data['index'] = np.arange(len(data))
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(x='index', y='sepal_length', data=data, marker='o', color='blue')
+    plt.title('Line Plot of Sepal Length over Index')  # Univariate Plot
+    plt.xlabel('Index')
+    plt.ylabel('Sepal Length')
+    plt.show()
+
+# Call functions for different data visualizations
+
+# Numerical data visualization
+numerical_visualization(data)
+
+# Categorical data visualization
+categorical_visualization(data)
+
+# Qualitative data visualization (using a small text sample)
+qualitative_visualization()
+
+# Quantitative data visualization
+quantitative_visualization(data)
+
+  
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = sns.load_dataset('iris')
+
+# numerical
+sns.histplot(data['sepal_length'],bins=20,kde=True)
+plt.show()
+
+sns.boxplot(data['petal_length'])
+plt.show()
+
+# categorical
+species = data['species'].value_counts()
+plt.pie(species,labels=species.keys(),explode=[0.1,0.1,0.2],autopct='%1.1f%%')
+plt.show()
+
+sns.countplot(data['species'])
+plt.show()
+
+# quantitative
+sns.scatterplot(x=data['sepal_length'],y=data['sepal_width'],data=data,hue='species')
+plt.show()
+
+plt.plot(data['sepal_length'])
+plt.show()
+
+# qualitative
+import nltk
+from nltk.corpus import movie_reviews
+from wordcloud import WordCloud
+
+nltk.download('movie_reviews',quiet=True)
+words = " ".join(movie_reviews.words())
+wordcloud = WordCloud(background_color='white').generate(words)
+plt.imshow(wordcloud,interpolation='bilinear')
+plt.axis('off')
+plt.show()  
+
+10. Implement data visualization techniques for univariate data (Stem- and-leaf plots, – Histogram, Box plot)  
+!pip install stemgraphic
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import stemgraphic
+
+# Load dataset
+data = sns.load_dataset("iris")
+col = data['sepal_length']
+
+# Univariate Visualization: Stem-and-Leaf Plot
+def stem_and_leaf_plot(data):
+    stemgraphic.stem_graphic(data)
+    plt.title('Stem-and-Leaf Plot of Sepal Length')
+    plt.show()
+
+# Univariate Visualization: Histogram
+def plot_histogram(data):
+    plt.hist(data, bins=20, edgecolor='black', alpha=0.7, color='lightblue')
+    plt.title('Histogram of Sepal Length')
+    plt.xlabel('Sepal Length')
+    plt.ylabel('Frequency')
+    plt.show()
+
+# Univariate Visualization: Box Plot
+def plot_boxplot(data):
+    sns.boxplot(x=data, color='lightgreen')
+    plt.title('Box Plot of Sepal Length')
+    plt.xlabel('Sepal Length')
+    plt.show()
+
+# Visualizing each plot for univariate data
+stem_and_leaf_plot(col)  # Stem-and-Leaf Plot
+plot_histogram(col)      # Histogram
+plot_boxplot(col)        # Box Plot
+
+
+!pip install stemgraphic
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import stemgraphic
+
+data = sns.load_dataset('iris')
+col = data['sepal_length']
+
+stemgraphic.stem_graphic(col)
+plt.show()
+
+sns.histplot(col,bins=20)
+plt.show()
+
+sns.countplot(data['species'])
+plt.show()
+
+sns.boxplot(data['sepal_length'])
+plt.show()
+
+species = data['species'].value_counts()
+plt.pie(species,labels=species.keys())
+plt.show()
+
+
+11. Implement data visualization techniques for multivariate data (grouped bar plot, Scatter plot, Bubble chart, Heat map, run chart, Multivariate chart)
+  
+ import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+
+data = sns.load_dataset('penguins').dropna()
+data.columns
+
+sns.countplot(x='island',hue='species',data=data)
+plt.show()
+
+sns.scatterplot(x='bill_length_mm',y='bill_depth_mm',hue='species',data=data)
+plt.show()
+
+sns.scatterplot(x='bill_length_mm',y='bill_depth_mm',hue='species',data=data,size='body_mass_g')
+plt.show()
+
+sns.heatmap(data.corr(numeric_only=True),annot=True,cmap='coolwarm',fmt='.2f')
+plt.show()
+
+sns.pairplot(data,hue='species')
+plt.show()
+
+plt.figure(figsize=(10,6))
+plt.plot(data['bill_length_mm'].values, marker='o', linestyle='-')
+plt.title('Run Chart of Body Mass')
+plt.xlabel('Observation Index')
+plt.ylabel('Body Mass (g)')
+plt.grid(True)
+plt.show()
+
+print('\n'*500)
+
+  
+  
+
+  

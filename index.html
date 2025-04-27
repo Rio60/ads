@@ -95,6 +95,10 @@ sns.pairplot(df.select_dtypes(include=[np.number]))  # Select numeric columns on
 plt.suptitle('Pairplot of Numeric Features', y=1.02)
 plt.show()
 
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
 2. Implement Measure of variation(range, interquartile range, variance, standard deviation, coefficient of variation)
 import pandas as pd
 import numpy as np
@@ -146,6 +150,10 @@ plt.figure(figsize=(10,6))
 sns.pairplot(df[numeric_cols])
 plt.tight_layout()
 plt.show()
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
 
 3. Implement data cleaning techniques
 
@@ -216,6 +224,12 @@ def clean_data():
 if __name__ == "__main__":
     clean_data()
 
+
+            
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+            
 4. Skewness and Kurtosis
 
 import seaborn as sns
@@ -272,7 +286,12 @@ kurtosis_manual = np.sum((col - col.mean())**4) / (len(col) * np.std(col)**4) - 
 print("Skewness (manual):", skewness_manual)
 print("Kurtosis (manual):", kurtosis_manual)
 
-  
+
+    
+  -----------------------------------------------------------------------------------------------------------------------------
+
+
+    
 5. Karl Pearsons coefficient of skewness  
 import seaborn as sns
 import numpy as np
@@ -344,6 +363,10 @@ plt.axvline(median_val,label='Median',linestyle='--',color='blue')
 plt.axvline(mode_val,label='Mode',linestyle='--',color='green')
 plt.show()
 
+
+  -----------------------------------------------------------------------------------------------------------------------------  
+    
+
 6. Implement Bowleys’s Coefficient of Skewness
 
   
@@ -407,8 +430,10 @@ plt.axvline(q3,color='green',linestyle='--',label='Q3')
 plt.legend()
 plt.show()
 
+    
+-----------------------------------------------------------------------------------------------------------------------------
 
-  
+    
 7. Implement Karl Pearson’s Correlation coefficient
 import seaborn as sns
 import numpy as np
@@ -470,6 +495,11 @@ plt.figure(figsize=(8,6))
 sns.regplot(x=x,y=y,scatter_kws={'color':'red'},line_kws={'color':'blue'})
 plt.show()
 
+
+
+ -----------------------------------------------------------------------------------------------------------------------------
+
+    
 8. Implement Spearman correlation coefficient
 import seaborn as sns
 import numpy as np
@@ -525,6 +555,10 @@ sns.regplot(x=x,y=y,scatter_kws={'color':'blue'},line_kws={'color':'red'})
 plt.show()
 
 
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+    
 9. Implement data visualization techniques for numerical variable/categorical variable/qualitative/quantitative data
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -655,6 +689,10 @@ plt.imshow(wordcloud,interpolation='bilinear')
 plt.axis('off')
 plt.show()  
 
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+    
 10. Implement data visualization techniques for univariate data (Stem- and-leaf plots, – Histogram, Box plot)  
 !pip install stemgraphic
 
